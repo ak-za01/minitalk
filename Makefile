@@ -1,19 +1,27 @@
 NAME = minitalk
 SERVER = server
 CLIENT = client
-CC = cc
-CFLAGS = -Wall -Wextra -Werror
+CC = cc -Wall -Wextra -Werror
+
+SERVER_SRC	=	mandatory/server.c mandatory/utils.c
+CLIENT_SRC	=	mandatory/client.c mandatory/utils.c
+
+S_OBJ = $(SERVER_SRC:.c=.o)
+C_OBJ = $(CLIENT_SRC:.c=.o)
 
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): server.c
-	$(CC) $(CFLAGS) server.c -o $(SERVER)
+$(SERVER): $(S_OBJ)
+	$(CC) -o $(SERVER) $(S_OBJ)
 
-$(CLIENT): client.c
-	$(CC) $(CFLAGS) client.c -o $(CLIENT)
+$(CLIENT): $(C_OBJ)
+	$(CC) -o $(CLIENT) $(C_OBJ)
+
+%.o: %.c minitalk.h
+	$(CC) -c $< -o $@
 
 clean:
-	rm -f *.o
+	rm -f $(S_OBJ) $(C_OBJ)
 
 fclean: clean
 	rm -f $(SERVER) $(CLIENT)
