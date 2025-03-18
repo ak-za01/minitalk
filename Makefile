@@ -1,31 +1,48 @@
-NAME = minitalk
-SERVER = server
-CLIENT = client
-CC = cc -Wall -Wextra -Werror
+NAME_CLIENT = client
+NAME_SERVER = server
+NAME_CLIENT_BONUS = client_bonus
+NAME_SERVER_BONUS = server_bonus
 
-SERVER_SRC	=	mandatory/server.c mandatory/utils.c
-CLIENT_SRC	=	mandatory/client.c mandatory/utils.c
+CC = cc
+CFLAGS = -Wall -Wextra -Werror
 
-S_OBJ = $(SERVER_SRC:.c=.o)
-C_OBJ = $(CLIENT_SRC:.c=.o)
+SRC_CLIENT = mandatory/client.c mandatory/utils.c
+SRC_SERVER = mandatory/server.c mandatory/utils.c
 
-all: $(SERVER) $(CLIENT)
+SRC_CLIENT_BONUS = bonus/client_bonus.c bonus/utils_bonus.c
+SRC_SERVER_BONUS = bonus/server_bonus.c bonus/utils_bonus.c
 
-$(SERVER): $(S_OBJ)
-	$(CC) -o $(SERVER) $(S_OBJ)
+C_OBJ = $(SRC_CLIENT:.c=.o)
+S_OBJ = $(SRC_SERVER:.c=.o)
 
-$(CLIENT): $(C_OBJ)
-	$(CC) -o $(CLIENT) $(C_OBJ)
+C_OBJ_BONUS = $(SRC_CLIENT_BONUS:.c=.o)
+S_OBJ_BONUS = $(SRC_SERVER_BONUS:.c=.o)
 
-%.o: %.c minitalk.h
-	$(CC) -c $< -o $@
+all: $(NAME_CLIENT) $(NAME_SERVER)
+
+$(NAME_CLIENT): $(C_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(C_OBJ)
+
+$(NAME_SERVER): $(S_OBJ)
+	$(CC) $(CFLAGS) -o $@ $(S_OBJ)
+
+bonus: $(NAME_CLIENT_BONUS) $(NAME_SERVER_BONUS)
+
+$(NAME_CLIENT_BONUS): $(C_OBJ_BONUS)
+	$(CC) $(CFLAGS) -o $(NAME_CLIENT) $(C_OBJ_BONUS)
+
+$(NAME_SERVER_BONUS): $(S_OBJ_BONUS)
+	$(CC) $(CFLAGS) -o $(NAME_SERVER) $(S_OBJ_BONUS)
+
+%.o: %.c mandatory/minitalk.h bonus/minitalk_bonus.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(S_OBJ) $(C_OBJ)
+	rm -f $(C_OBJ) $(S_OBJ) $(C_OBJ_BONUS) $(S_OBJ_BONUS)
 
 fclean: clean
-	rm -f $(SERVER) $(CLIENT)
+	rm -f $(NAME_CLIENT) $(NAME_SERVER) $(NAME_CLIENT_BONUS) $(NAME_SERVER_BONUS)
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: clean

@@ -6,17 +6,21 @@
 /*   By: anktiri <anktiri@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/14 16:43:34 by anktiri           #+#    #+#             */
-/*   Updated: 2025/03/18 01:43:47 by anktiri          ###   ########.fr       */
+/*   Updated: 2025/03/18 16:46:50 by anktiri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-static void	handle_signal(int sig)
+static void	handle_signal(int sig, siginfo_t *info, void *context)
 {
 	static int	bit_count = 0;
 	static char	c = 0;
+	static int	current_pid = 0;
 
+	(void)context;
+	if (current_pid != info->si_pid)
+		bit_count = ((c = 0, current_pid = info->si_pid), 0);
 	if (sig == SIGUSR1)
 		c = (c << 1);
 	else if (sig == SIGUSR2)
@@ -40,11 +44,15 @@ static void	handle_signal(int sig)
 
 int	main(void)
 {
+	struct sigaction	sa;
+
 	ft_putstr_fd("\e[92mserver [PID = ", 1);
 	ft_putnbr(getpid());
-	ft_putstr_fd("]\n\e[0m", STDOUT_FILENO);
-	signal(SIGUSR1, handle_signal);
-	signal(SIGUSR2, handle_signal);
+	ft_putstr_fd("]\n\e[0m", 1);
+	sa.sa_flags = SA_SIGINFO;
+	sa.sa_sigaction = handle_signal;
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	while (1)
 		pause();
 	return (0);

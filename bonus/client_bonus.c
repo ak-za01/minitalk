@@ -1,29 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client.c                                           :+:      :+:    :+:   */
+/*   client_bonus.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: anktiri <anktiri@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/14 16:43:15 by anktiri           #+#    #+#             */
-/*   Updated: 2025/03/14 16:43:21 by anktiri          ###   ########.fr       */
+/*   Created: 2025/03/16 23:43:08 by anktiri           #+#    #+#             */
+/*   Updated: 2025/03/18 16:26:25 by anktiri          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <signal.h>
-#include <unistd.h>
+#include "minitalk_bonus.h"
 
-static int	ft_atoi(const char *str)
+static void	acknowledge_signal(int sig)
 {
-	int	result;
-
-	result = 0;
-	while (*str >= '0' && *str <= '9')
-	{
-		result = result * 10 + (*str - '0');
-		str++;
-	}
-	return (result);
+	if (sig == SIGUSR1)
+		ft_putstr_fd("\e[92m## server has acknowledge your message ##\n\e[0m", 1);
+	exit(0);
 }
 
 static void	send_char(int pid, char c)
@@ -37,13 +30,14 @@ static void	send_char(int pid, char c)
 			kill(pid, SIGUSR2);
 		else
 			kill(pid, SIGUSR1);
-		usleep(100);
+		usleep(150);
 		i--;
 	}
 }
 
 static void	send_string(int pid, const char *str)
 {
+	send_char(pid, 1);
 	while (*str)
 	{
 		send_char(pid, *str);
@@ -58,12 +52,19 @@ int	main(int argc, char **argv)
 
 	if (argc != 3)
 	{
-		write(2, "Usage: ./client <PID> <string>\n", 31);
+		ft_putstr_fd("\e[31m## error - incorrect syntax ##\n\e[0m", 1);
+		ft_putstr_fd("\e[92m./client <the server PID> <the string to send>\n\e[0m",
+			1);
 		return (1);
 	}
 	pid = ft_atoi(argv[1]);
-	if (pid <= 0)
+	if (pid == -1 || kill(pid, 0) < 0)
+	{
+		ft_putstr_fd("\e[31m## error - PID is invalid ##\n\e[0m", 2);
 		return (1);
+	}
+	signal(SIGUSR1, acknowledge_signal);
 	send_string(pid, argv[2]);
+	pause();
 	return (0);
 }
